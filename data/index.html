@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="style.css">
+        <title>HamDuino</title>
+        <link rel="icon" href="favicon.ico" type="image/x-icon">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <div class="container"> <!-- HamDuino -->
+            <label class="header"> HamDuino </label>
+            <div class="setting">
+
+                <div class="setting"> <!-- Visualizations -->
+                    <select id="visualizationSelect"
+                        class="clickable">
+                        <option value="about">About</option>
+                        <option value="wifi">WiFi</option>
+                    </select>
+                </div>
+
+                <div class="toggle-content" id="wifi-settings">
+                    <!-- WiFi -->
+                    <button id="wifiSetup" class="clickable button"
+                        style="background-color: brown;">Setup</button>
+                    <button id="wifiErase" class="clickable button"
+                        style="background-color: brown;">Erase</button>
+                </div>
+
+                <div class="toggle-content" id="about-settings"
+                    style="display: block;"><!-- About -->
+
+                    <div class="setting">
+                        <label>Version</label>
+                        <label id="version">0.0.1</label>
+                    </div>
+
+                    <div class="setting">
+                        <label>Designed and Developed by:</label>
+                        <a href="https://github.com/seemywingz/HamDuino"
+                            target="_blank" id="SeeMyWingZ">SeeMyWingZ</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>

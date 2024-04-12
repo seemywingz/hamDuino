@@ -1,13 +1,10 @@
 
-#include <AudioOutputI2SNoDAC.h>
-#include <ESP8266SAM.h>
 #include <ESPWiFi.h>
 #include <IOPin.h>
 
-
 // WeMos Pin Config:
 // PTT Trigger: D6 (12)
-// Audio Out: RX 
+// Audio Out: RX
 
 // Pins
 IOPin ptt = IOPin(12);
@@ -17,42 +14,48 @@ const String webServerName = "HamDuino";
 ESPWiFi wifi = ESPWiFi("HamDuino", "abcd1234");
 
 // Audio
-AudioOutputI2SNoDAC *out = NULL;
-ESP8266SAM *sam = NULL;
+
+// Timing Constants
+unsigned long pttOnTime = 1000;  // PTT is on for 1 second
+unsigned long pttOffTime = 4000; // PTT is off for 4 seconds
+unsigned long lastToggleTime = 0;
+bool pttState = false;  // Current state of PTT pin, false means OFF
 
 void setup() {
   initializeSerial();
   initializeWebServer();
-  initializeAudio();  
 }
 
 void loop() {
   wifi.handleClient();
-  ptt.on();
-  delay(300);
-  sam->Say(out, "Whiskey Sierra Charlie Echo 4 9 6");
-  delay(300);
-  ptt.off();
-  delay(3000);
+  togglePTT(pttOnTime, pttOffTime);
 }
 
-void initializeAudio() {
-  out = new AudioOutputI2SNoDAC();
-  out->begin();
-  sam = new ESP8266SAM;
-  sam->SetSpeed(54); // Speed, range usually from 0 to 99
-  sam->SetPitch(75); // Pitch, range usually from 0 to 99
-  sam->SetMouth(128); // Mouth, range usually from 0 to 255
-  sam->SetThroat(128); // Throat, range usually from 0 to 255
+void togglePTT(long pttOnTime, long pttOffTime) {
+  unsigned long currentTime = millis();
+   if (pttState && (currentTime - lastToggleTime >= pttOnTime)) {
+    // Turn off PTT
+    ptt.off();
+    pttState = false;
+    lastToggleTime = currentTime;  // Reset the toggle time
+  } else if (!pttState && (currentTime - lastToggleTime >= pttOffTime)) {
+    // Turn on PTT
+    ptt.on();
+    pttState = true;
+    lastToggleTime = currentTime;  // Reset the toggle time
+  }
 }
+
 
 void initializeSerial () {
   Serial.begin(115200);
   while (!Serial) {};
-  Serial.print("HamDuino starting up...");
+  Serial.println("HamDuino starting up...");
 }
 
 void initializeWebServer() {
   wifi.enableMDNS(webServerName);
   wifi.start();
 }
+
+

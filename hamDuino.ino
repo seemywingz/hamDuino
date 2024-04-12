@@ -18,29 +18,32 @@ ESPWiFi wifi = ESPWiFi("HamDuino", "abcd1234");
 
 // Audio
 AudioOutputI2SNoDAC *out = NULL;
+ESP8266SAM *sam = NULL;
 
 void setup() {
   initializeSerial();
-  initializeAudio();  
   initializeWebServer();
+  initializeAudio();  
 }
 
 void loop() {
   wifi.handleClient();
   ptt.on();
-  ESP8266SAM *sam = new ESP8266SAM;
-  sam->Say(out, "Can you hear me now?");
-  delay(500);
-  sam->Say(out, "I can't hear you!");
-  delete sam;
-  delay(1000);
+  delay(300);
+  sam->Say(out, "Whiskey Sierra Charlie Echo 4 9 6");
+  delay(300);
   ptt.off();
-  delay(1000);
+  delay(3000);
 }
 
 void initializeAudio() {
   out = new AudioOutputI2SNoDAC();
   out->begin();
+  sam = new ESP8266SAM;
+  sam->SetSpeed(54); // Speed, range usually from 0 to 99
+  sam->SetPitch(75); // Pitch, range usually from 0 to 99
+  sam->SetMouth(128); // Mouth, range usually from 0 to 255
+  sam->SetThroat(128); // Throat, range usually from 0 to 255
 }
 
 void initializeSerial () {

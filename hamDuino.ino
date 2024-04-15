@@ -47,6 +47,7 @@ void playAudio(const char* filename) {
   }
   file = new AudioFileSourceLittleFS(filename);
   ptt.on();
+  delay(100);
   if (!wav->begin(file, dac)) {
     Serial.println("Failed to begin WAV playback");
     return;

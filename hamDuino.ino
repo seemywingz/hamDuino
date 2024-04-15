@@ -1,10 +1,13 @@
-
+#include <AudioOutputI2SNoDAC.h>
+#include <ESP8266SAM.h>
 #include <ESPWiFi.h>
 #include <IOPin.h>
 
 // WeMos Pin Config:
-// PTT Trigger: D6 (12)
-// Audio Out: RX
+// Radio PTT: D6 (12)
+// Audio DIN: RX (03)
+// Audio BCK: D7 (13)
+// Audio LCK: D8 (15)
 
 // Pins
 IOPin ptt = IOPin(12);
@@ -14,42 +17,52 @@ const String webServerName = "HamDuino";
 ESPWiFi wifi = ESPWiFi("HamDuino", "abcd1234");
 
 // Audio
-
-// Timing Constants
-unsigned long pttOnTime = 1000;  // PTT is on for 1 second
-unsigned long pttOffTime = 4000; // PTT is off for 4 seconds
-unsigned long lastToggleTime = 0;
-bool pttState = false;  // Current state of PTT pin, false means OFF
+AudioOutputI2SNoDAC *out = NULL;
+ESP8266SAM *sam = NULL;
 
 void setup() {
   initializeSerial();
   initializeWebServer();
+  initializeAudio();
 }
 
 void loop() {
   wifi.handleClient();
-  togglePTT(pttOnTime, pttOffTime);
+  ptt.on();
+  delay(100);
+  sam->Say(out, "Hello, World!");
+  ptt.off();
+  delay(4000);
 }
 
-void togglePTT(long pttOnTime, long pttOffTime) {
-  unsigned long currentTime = millis();
-   if (pttState && (currentTime - lastToggleTime >= pttOnTime)) {
-    // Turn off PTT
-    ptt.off();
-    pttState = false;
-    lastToggleTime = currentTime;  // Reset the toggle time
-  } else if (!pttState && (currentTime - lastToggleTime >= pttOffTime)) {
-    // Turn on PTT
-    ptt.on();
-    pttState = true;
-    lastToggleTime = currentTime;  // Reset the toggle time
+
+void runAtInterval(void (*functionToRun)(), unsigned int interval) {
+  static unsigned long lastRunTime = 0;
+  
+  unsigned long currentRunTime = millis();
+  unsigned int IntervalMills =
+      1000 / interval;  // Duration of each frame in milliseconds
+
+  if (currentRunTime - lastRunTime >= IntervalMills) {
+    lastRunTime = currentRunTime;
+    functionToRun();
   }
 }
 
+void initializeAudio() {
+  out = new AudioOutputI2SNoDAC();
+  out->begin();
+  sam = new ESP8266SAM;
+  sam->SetSpeed(54); // Speed, range usually from 0 to 99
+  sam->SetPitch(75); // Pitch, range usually from 0 to 99
+  sam->SetMouth(128); // Mouth, range usually from 0 to 255
+  sam->SetThroat(128); // Throat, range usually from 0 to 255
+}
 
-void initializeSerial () {
+void initializeSerial() {
   Serial.begin(115200);
-  while (!Serial) {};
+  while (!Serial) {
+  };
   Serial.println("HamDuino starting up...");
 }
 
@@ -57,5 +70,3 @@ void initializeWebServer() {
   wifi.enableMDNS(webServerName);
   wifi.start();
 }
-
-

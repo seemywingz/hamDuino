@@ -1,13 +1,14 @@
-#include <AudioOutputI2SNoDAC.h>
-#include <ESP8266SAM.h>
+#include <AudioGeneratorWAV.h>
+#include <AudioFileSourceLittleFS.h>
+#include <AudioOutputI2S.h>
 #include <ESPWiFi.h>
 #include <IOPin.h>
 
 // WeMos Pin Config:
 // Radio PTT: D6 (12)
 // Audio DIN: RX (03)
-// Audio BCK: D7 (13)
-// Audio LCK: D8 (15)
+// Audio BCK: D8 (15)
+// Audio LCK: D4 (02)
 
 // Pins
 IOPin ptt = IOPin(12);
@@ -17,8 +18,9 @@ const String webServerName = "HamDuino";
 ESPWiFi wifi = ESPWiFi("HamDuino", "abcd1234");
 
 // Audio
-AudioOutputI2SNoDAC *out = NULL;
-ESP8266SAM *sam = NULL;
+AudioFileSourceLittleFS *file;
+AudioGeneratorWAV *wav;
+AudioOutputI2S *dac;
 
 void setup() {
   initializeSerial();
@@ -28,11 +30,27 @@ void setup() {
 
 void loop() {
   wifi.handleClient();
+  if (wav->isRunning()) {
+    if (!wav->loop()) {
+      wav->stop();
+      ptt.off();
+      delay(1000);
+    }
+  } else {
+    playAudio("/wsce496.wav");
+  }
+}
+
+void playAudio(const char* filename) {
+  if (file != nullptr) {
+    delete file;
+  }
+  file = new AudioFileSourceLittleFS(filename);
   ptt.on();
-  delay(100);
-  sam->Say(out, "Hello, World!");
-  ptt.off();
-  delay(4000);
+  if (!wav->begin(file, dac)) {
+    Serial.println("Failed to begin WAV playback");
+    return;
+  }
 }
 
 
@@ -50,13 +68,11 @@ void runAtInterval(void (*functionToRun)(), unsigned int interval) {
 }
 
 void initializeAudio() {
-  out = new AudioOutputI2SNoDAC();
-  out->begin();
-  sam = new ESP8266SAM;
-  sam->SetSpeed(54); // Speed, range usually from 0 to 99
-  sam->SetPitch(75); // Pitch, range usually from 0 to 99
-  sam->SetMouth(128); // Mouth, range usually from 0 to 255
-  sam->SetThroat(128); // Throat, range usually from 0 to 255
+  file = new AudioFileSourceLittleFS("/wsce496.wav");
+  dac = new AudioOutputI2S();
+  dac->SetPinout(15, 2, 3); // BCLK, LRC, DOUT
+  wav = new AudioGeneratorWAV();
+  // wav->begin(file, dac);
 }
 
 void initializeSerial() {

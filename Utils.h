@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
+#include <LittleFS.h>
 #include <WiFiClient.h>
 
 // Function to make HTTP requests
@@ -77,6 +78,49 @@ String getCurrentTime() {
       return "Key 'datetime' not found in JSON response";
     }
   }
+}
+
+void downloadWAVFile(const String& url, const String& path) {
+  WiFiClientSecure client;
+  client.setInsecure();  // Only for testing, not recommended for production
+
+  HTTPClient http;
+  http.begin(client, url);  // Start the client with URL
+
+  int httpCode = http.GET();  // Make the HTTP request
+
+  if (httpCode == HTTP_CODE_OK) {  // Check the returning HTTP status code
+    File file =
+        LittleFS.open(path, "w");  // Open a file for writing in LittleFS
+    if (!file) {
+      Serial.println("Failed to open file for writing");
+      return;
+    }
+
+    // Get the HTTP response stream
+    WiFiClient* stream = http.getStreamPtr();
+
+    // Read all the data from the stream
+    uint8_t buffer[128];  // Create a buffer to store chunks of data
+    while (http.connected() ||
+           stream->available()) {  // While connected or data is available
+      size_t size = stream->available();  // Get available data size
+      if (size) {                         // If data is available
+        auto minSize = std::min(
+            size,
+            static_cast<size_t>(sizeof(buffer)));    // Ensure type consistency
+        int c = stream->readBytes(buffer, minSize);  // Read data into buffer
+        file.write(buffer, c);                       // Write buffer to file
+      }
+      delay(1);
+    }
+    file.close();  // Close the file
+    Serial.println("File downloaded and saved");
+  } else {
+    Serial.println("Download failed");
+  }
+
+  http.end();  // Close the HTTP connection
 }
 
 #endif UTILS_H

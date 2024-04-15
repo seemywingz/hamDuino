@@ -1,6 +1,3 @@
-#include <AudioFileSourceBuffer.h>
-#include <AudioFileSourceHTTPStream.h>
-#include <AudioFileSourceICYStream.h>
 #include <AudioFileSourceLittleFS.h>
 #include <AudioGeneratorWAV.h>
 #include <AudioOutputI2S.h>
@@ -28,8 +25,6 @@ ESPWiFi wifi = ESPWiFi("HamDuino", "abcd1234");
 
 // Audio
 AudioFileSourceLittleFS *fileLFS;
-AudioFileSourceICYStream *fileStream;
-AudioFileSourceBuffer *buff;
 AudioGeneratorWAV *wav;
 AudioOutputI2S *dac;
 
@@ -54,6 +49,26 @@ void runAtInterval(void (*functionToRun)(), unsigned int interval) {
   }
 }
 
+void handleAudio() {
+  if (wav->isRunning()) {
+    if (!wav->loop()) {
+      stopAudio();
+    }
+  } else {
+    runAtInterval(
+        []() {
+          Serial.println("Playing audio...");
+          playAudio("/wsce496.wav");
+          // Serial.println("Playing Downloaded Audio");
+          // downloadWAVFile("https://ccrma.stanford.edu/~jos/wav/gtr-jazz-3.wav",
+          //                 "/jazz.wav");
+          // playAudio("/jazz.wav");
+          Serial.println(getCurrentTime());
+        },
+        9);
+  }
+}
+
 void playAudio(const char *filename) {
   if (fileLFS != nullptr) {
     delete fileLFS;
@@ -68,52 +83,14 @@ void playAudio(const char *filename) {
   }
 }
 
-void streamAudio(const char *url) {
-  
-
-  ptt.on();
-  // Create a new HTTP audio file source for streaming
-  fileStream = new AudioFileSourceICYStream(url);
-  buff = new AudioFileSourceBuffer(fileStream, 2048);
-  if (!wav->begin(buff, dac)) {
-    Serial.println("Failed to begin streaming WAV playback");
-    return;
-  }
-}
-
-void handleAudio() {
-  if (wav->isRunning()) {
-    if (!wav->loop()) {
-      stopAudio();
-    }
-  } else {
-    runAtInterval(
-        []() {
-          playAudio("/wsce496.wav");
-          Serial.println("Playing audio...");
-          // streamAudio("https://ccrma.stanford.edu/~jos/wav/gtr-nylon22.wav");
-          Serial.println(getCurrentTime());
-        },
-        9);
-  }
-}
-
 void stopAudio() {
   if (wav->isRunning()) {
     wav->stop();  // Stop any currently playing audio
     ptt.off();
   }
-  if (fileStream != nullptr) {
-    delete fileStream;  // Clean up any existing file source
-    fileStream = nullptr;
-  }
   if (fileLFS != nullptr) {
     delete fileLFS;  // Clean up any existing file source
     fileLFS = nullptr;
-  }
-  if (buff != nullptr) {
-    delete buff;  // Clean up any existing buffer
-    buff = nullptr;
   }
 }
 

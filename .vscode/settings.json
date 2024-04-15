@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.conf": "bat",
+        "*.ino": "cpp",
         "array": "cpp",
         "deque": "cpp",
         "list": "cpp",
@@ -10,6 +11,8 @@
         "string_view": "cpp",
         "initializer_list": "cpp",
         "ranges": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "*.tcc": "cpp",
+        "fstream": "cpp"
     }
 }

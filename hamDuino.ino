@@ -32,7 +32,7 @@ void loop() {
           // playWAVFile("/wsce496.wav");
           googleTextToSpeech("Hello, world!", "/tts.mp3.b64");
         },
-        30);
+        120);
 }
 
 void initializeData() {

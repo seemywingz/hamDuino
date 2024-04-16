@@ -9,54 +9,62 @@
 #include "Utils.h"
 
 const String googleAPIKey = "";
-const String googleURL = "https://texttospeech.googleapis.com/v1/";
 
 void googleTextToSpeech(const String& text, const char* outputPath) {
   WiFiClientSecure client;
-  client.setInsecure();  // Disable certificate verification for simplicity (not
-                         // recommended for production)
-  HTTPClient http;
+  client.setInsecure();  // For testing, not recommended for production
 
-  // Google API URL with API Key
-  String googleURL =
+  HTTPClient http;
+  String fullURL =
       "https://texttospeech.googleapis.com/v1/text:synthesize?key=" +
       String(googleAPIKey);
 
-  // Setup JSON payload
-  String payload = "{\"input\":{\"text\":\"" + text +
-                   "\"},\"voice\":{\"languageCode\":\"en-US\",\"ssmlGender\":"
-                   "\"FEMALE\"},\"audioConfig\":{\"audioEncoding\":\"mp3\"}}";
+  // Ensure proper JSON format and encoding
+  DynamicJsonDocument doc(1024);
+  doc["input"]["text"] = text;
+  doc["voice"]["languageCode"] = "en-US";
+  doc["voice"]["ssmlGender"] = "FEMALE";
+  doc["audioConfig"]["audioEncoding"] = "MP3";
+  String payload;
+  serializeJson(doc, payload);
 
-  http.begin(client, googleURL);
+  http.begin(client, fullURL);
   http.addHeader("Content-Type", "application/json");
 
-  int httpCode = http.POST(payload);  // Send the request
+  Serial.println("Sending POST request to URL: " + fullURL);
+  Serial.println("Payload: " + payload);
 
-  if (httpCode == HTTP_CODE_OK) {
-    File file = LittleFS.open(outputPath, "w");
-    if (!file) {
-      Serial.println("Failed to open file for writing");
-      return;
-    }
-
-    // Get the response as a stream
-    WiFiClient* stream = http.getStreamPtr();
-
-    // Read all the data received and save it to the file
-    uint8_t buffer[1024];  // Buffer to hold chunks of data
-    while (http.connected() && stream->available()) {
-      size_t len = stream->readBytes(buffer, sizeof(buffer));
-      if (len > 0) {
-        file.write(buffer, len);  // Write to file
+  int httpCode = http.POST(payload);
+  if (httpCode > 0) {
+    if (httpCode == HTTP_CODE_OK) {
+      WiFiClient* stream = http.getStreamPtr();
+      File file = LittleFS.open(outputPath, "w");
+      if (!file) {
+        Serial.println("Failed to open file for writing");
+        return;
       }
+
+      // Write response directly to file in chunks
+      byte buffer[1024] = {0};
+      while (stream->available()) {
+        size_t len = stream->readBytes(buffer, sizeof(buffer));
+        if (len > 0) {
+          file.write(buffer, len);
+        }
+      }
+      file.close();
+      Serial.println("File saved successfully.");
+    } else {
+      String response = http.getString();
+      Serial.println("HTTP Error: " + String(httpCode) + " " +
+                     http.errorToString(httpCode));
+      Serial.println("Response: " + response);
     }
-    file.close();  // Close the file when done
-    Serial.println("Audio content saved successfully to LittleFS");
   } else {
-    Serial.println("Error in HTTP request: " + http.errorToString(httpCode));
+    Serial.println("Failed to send HTTP POST request");
   }
 
-  http.end();  // End the HTTP connection
+  http.end();
 }
 
 #endif GOOGLE_TTS_H

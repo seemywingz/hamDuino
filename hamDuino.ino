@@ -22,17 +22,19 @@ void setup() {
   initializeAudio();
 }
 
+boolean ranOnce = false;
+
 void loop() {
   wifi.handleClient();
   handleAudio();
-   runAtInterval(
-        []() {
-          Serial.println(getCurrentTime());
-          Serial.println("Playing audio...");
-          // playWAVFile("/wsce496.wav");
-          googleTextToSpeech("Hello, world!", "/tts.mp3.b64");
-        },
-        120);
+  if (!ranOnce){ 
+    Serial.println(getCurrentTime());
+    // Serial.println("Playing audio...");
+    // playWAVFile("/wsce496.wav");
+    Serial.println("Generating TTS...");
+    googleTextToSpeech("Hello, world!", "/tts.mp3");
+    ranOnce = true;
+  }
 }
 
 void initializeData() {

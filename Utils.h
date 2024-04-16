@@ -6,40 +6,48 @@
 #include <LittleFS.h>
 #include <WiFiClient.h>
 
-// Function to make HTTP requests
-// Parameters:
-// - method: HTTP method (GET, POST, etc.)
-// - url: URL to make the request to
-// - payload: Request body, if any (for POST requests)
-// - contentType: Content type of the request body (for POST requests)
-// Returns: HTTP response as a String, or an error message
-String makeHttpRequest(const String& method, const String& url,
-                       const String& payload = "",
-                       const String& contentType = "") {
-  WiFiClient client;
-  HTTPClient http;
-  http.begin(client,
-             url);  // Begin by specifying which URL and which client to use
+// Time
+static unsigned long lastIntervalRun = 0;
 
-  // Add headers if necessary (for POST)
-  if (method == "POST" && payload.length() > 0 && contentType.length() > 0) {
+void runAtInterval(void (*functionToRun)(), unsigned int interval) {
+  unsigned long currentRunTime = millis();
+  unsigned int IntervalMills = interval * 1000;  // Interval in milliseconds
+
+  if (currentRunTime - lastIntervalRun >= IntervalMills) {
+    lastIntervalRun = currentRunTime;
+    functionToRun();
+  }
+}
+
+String makeHTTPSRequest(const String& method, const String& url,
+                        const String& payload = "",
+                        const String& contentType = "") {
+  WiFiClientSecure client;  // Using WiFiClientSecure for HTTPS
+  client.setInsecure();     // Disable certificate verification (not recommended
+                            // for production)
+  HTTPClient http;
+  http.begin(client, url);  // Start the client with URL
+
+  // Adding headers if it's a POST request with content
+  if (method == "POST" && !payload.isEmpty() && !contentType.isEmpty()) {
     http.addHeader("Content-Type", contentType);
   }
 
-  // Perform the request
+  // Make the HTTP request according to the method
   int httpCode = (method == "POST") ? http.POST(payload) : http.GET();
 
-  // Check the returning code
-  String response = "";
-  if (httpCode > 0) {  // Check for the returning code
+  // Process the HTTP response
+  String response;
+  if (httpCode > 0) {  // Check is there's a response
     if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-      response = http.getString();  // Get the request response payload
+      response = http.getString();  // Get the response payload
     }
   } else {
-    response = String("Error on HTTP request: ") + http.errorToString(httpCode);
+    response = "Error on HTTP request: " +
+               http.errorToString(httpCode);  // Handle errors
   }
 
-  http.end();  // Close connection
+  http.end();  // End the connection
   return response;
 }
 
@@ -63,8 +71,8 @@ String formatTimeForSpeech(const String& dateTime) {
 String getCurrentTime() {
   String currentTime = "";
   // Fetch the current time
-  String url = "http://worldtimeapi.org/api/ip";
-  String response = makeHttpRequest("GET", url);
+  String url = "https://worldtimeapi.org/api/ip";
+  String response = makeHTTPSRequest("GET", url);
   DynamicJsonDocument doc(1024);
   auto error = deserializeJson(doc, response);
   if (error) {
@@ -78,49 +86,6 @@ String getCurrentTime() {
       return "Key 'datetime' not found in JSON response";
     }
   }
-}
-
-void downloadWAVFile(const String& url, const String& path) {
-  WiFiClientSecure client;
-  client.setInsecure();  // Only for testing, not recommended for production
-
-  HTTPClient http;
-  http.begin(client, url);  // Start the client with URL
-
-  int httpCode = http.GET();  // Make the HTTP request
-
-  if (httpCode == HTTP_CODE_OK) {  // Check the returning HTTP status code
-    File file =
-        LittleFS.open(path, "w");  // Open a file for writing in LittleFS
-    if (!file) {
-      Serial.println("Failed to open file for writing");
-      return;
-    }
-
-    // Get the HTTP response stream
-    WiFiClient* stream = http.getStreamPtr();
-
-    // Read all the data from the stream
-    uint8_t buffer[128];  // Create a buffer to store chunks of data
-    while (http.connected() ||
-           stream->available()) {  // While connected or data is available
-      size_t size = stream->available();  // Get available data size
-      if (size) {                         // If data is available
-        auto minSize = std::min(
-            size,
-            static_cast<size_t>(sizeof(buffer)));    // Ensure type consistency
-        int c = stream->readBytes(buffer, minSize);  // Read data into buffer
-        file.write(buffer, c);                       // Write buffer to file
-      }
-      delay(1);
-    }
-    file.close();  // Close the file
-    Serial.println("File downloaded and saved");
-  } else {
-    Serial.println("Download failed");
-  }
-
-  http.end();  // Close the HTTP connection
 }
 
 #endif UTILS_H

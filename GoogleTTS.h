@@ -8,7 +8,7 @@
 #include "Audio.h"
 #include "Utils.h"
 
-const String googleAPIKey = "AIzaSyAmtqEMRMD6CK5OeH-pPttaDknrtU1bjV0";
+const String googleAPIKey = "";
 const String googleURL = "https://texttospeech.googleapis.com/v1/";
 
 void googleTextToSpeech(const String& text) {

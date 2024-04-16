@@ -24,17 +24,21 @@ void setup() {
 
 boolean ranOnce = false;
 
+unsigned long lastLoopRun = 0;
+
 void loop() {
   wifi.handleClient();
   handleAudio();
-  if (!ranOnce){ 
+  runAtInterval([]() {
     Serial.println(getCurrentTime());
-    // Serial.println("Playing audio...");
-    // playWAVFile("/wsce496.wav");
-    Serial.println("Generating TTS...");
-    googleTextToSpeech("Hello, world!", "/tts.mp3");
-    ranOnce = true;
-  }
+    Serial.println("Playing audio...");
+    playWAVFile("/wsce496.wav");
+  }, lastLoopRun, 9000);
+  // if (!ranOnce){ 
+    // Serial.println("Generating TTS...");
+    // googleTextToSpeech("Hello, world!", "/tts.mp3");
+    // ranOnce = true;
+  // }
 }
 
 void initializeData() {
@@ -59,7 +63,6 @@ void initializeWebServer() {
         }
         wifi.webServer.send(200, "text/html", message);
     });
-
 
   wifi.enableMDNS(webServerName);
   wifi.start();

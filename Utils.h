@@ -8,14 +8,11 @@
 
 #include "Base64.h"
 
-// Time
-static unsigned long lastIntervalRun = 0;
-
-void runAtInterval(void (*functionToRun)(), unsigned int interval) {
+void runAtInterval(void (*functionToRun)(), unsigned long& lastIntervalRun,
+                   unsigned int interval) {
   unsigned long currentRunTime = millis();
-  unsigned int IntervalMills = interval * 1000;  // Interval in milliseconds
 
-  if (currentRunTime - lastIntervalRun >= IntervalMills) {
+  if (currentRunTime - lastIntervalRun >= interval) {
     lastIntervalRun = currentRunTime;
     functionToRun();
   }

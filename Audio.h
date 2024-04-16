@@ -15,6 +15,7 @@ AudioOutputI2S *dac;
 
 // Pins
 IOPin ptt = IOPin(12);
+IOPin spk = IOPin(A0, INPUT);
 
 void initializeAudio() {
   dac = new AudioOutputI2S();
@@ -24,9 +25,8 @@ void initializeAudio() {
 
 void stopAudio() {
   wav->stop();
-  ptt.off();
   if (fileLFS != nullptr) {
-    delete fileLFS;  // Clean up any existing file source
+    delete fileLFS;
     fileLFS = nullptr;
   }
 }
@@ -35,13 +35,14 @@ void playWAVFile(const char *filename) {
   stopAudio();
   fileLFS = new AudioFileSourceLittleFS(filename);
   ptt.on();
-  delay(300);
-  tone(3, 693, 1000);
+  delay(500);
   if (!wav->begin(fileLFS, dac)) {
     Serial.println("Failed to begin WAV playback");
     return;
   }
 }
+
+unsigned long lastAudioCheck = 0;
 
 void handleAudio() {
   if (wav->isRunning()) {
@@ -49,6 +50,17 @@ void handleAudio() {
       stopAudio();
     }
   }
+  runAtInterval(
+      []() {
+        int audioLevel = spk.readA();
+        Serial.println("RX Audio Level: " + String(audioLevel));
+        if (audioLevel > 1000) {
+          ptt.on();
+        } else if (!wav->isRunning()) {
+          ptt.off();
+        }
+      },
+      lastAudioCheck, 100);
 }
 
 #endif AUDIO_H

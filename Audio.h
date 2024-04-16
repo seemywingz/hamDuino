@@ -53,8 +53,9 @@ void handleAudio() {
   runAtInterval(
       []() {
         int audioLevel = spk.readA();
-        Serial.println("RX Audio Level: " + String(audioLevel));
+        // Serial.println("RX Audio Level: " + String(audioLevel));
         if (audioLevel > 1000) {
+          Serial.println("RX Audio detected, triggering PTT");
           ptt.on();
         } else if (!wav->isRunning()) {
           ptt.off();

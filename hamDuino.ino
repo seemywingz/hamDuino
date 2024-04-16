@@ -33,7 +33,7 @@ void loop() {
     Serial.println(getCurrentTime());
     Serial.println("Playing audio...");
     playWAVFile("/wsce496.wav");
-  }, lastLoopRun, 9000);
+  }, lastLoopRun, 18000);
   // if (!ranOnce){ 
     // Serial.println("Generating TTS...");
     // googleTextToSpeech("Hello, world!", "/tts.mp3");

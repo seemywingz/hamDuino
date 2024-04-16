@@ -49,6 +49,7 @@ void initializeData() {
         Serial.println("An Error has occurred while mounting LittleFS");
         return;
     }
+  readGoogleAPIKey("/googleAPIKey");
 }
 
 void initializeWebServer() {

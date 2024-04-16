@@ -8,7 +8,7 @@
 #include "Audio.h"
 #include "Utils.h"
 
-const String googleAPIKey = "";
+String googleAPIKey = "";
 
 void googleTextToSpeech(const String& text, const char* outputPath) {
   WiFiClientSecure client;
@@ -65,6 +65,29 @@ void googleTextToSpeech(const String& text, const char* outputPath) {
   }
 
   http.end();
+}
+
+void saveGoogleAPIKey(const String& apiKey, const char* apiKeyFile) {
+  File file = LittleFS.open(apiKeyFile, "w");  // Open a file for writing
+  if (!file) {
+    Serial.println("Failed to open file for writing");
+    return;
+  }
+  file.print(apiKey);  // Write the API key to the file
+  file.close();        // Close the file
+  Serial.println("API Key saved to LittleFS");
+}
+
+String readGoogleAPIKey(String apiKeyFile) {
+  File file = LittleFS.open(apiKeyFile, "r");  // Open the file for reading
+  if (!file) {
+    Serial.println("Failed to open file for reading");
+    return "";
+  }
+  String apiKey = file.readStringUntil('\n');  // Read the API key from the file
+  file.close();                                // Close the file
+  googleAPIKey = apiKey;                       // Update the global variable
+  return apiKey;
 }
 
 #endif GOOGLE_TTS_H

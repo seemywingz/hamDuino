@@ -11,31 +11,52 @@
 const String googleAPIKey = "";
 const String googleURL = "https://texttospeech.googleapis.com/v1/";
 
-void googleTextToSpeech(const String& text) {
-  String payload =
-      String("{\"input\":{\"text\":\"") + text +
-      "\"},\"voice\":{\"languageCode\":\"en-US\",\"ssmlGender\":\"FEMALE\"}," +
-      "\"audioConfig\":{\"audioEncoding\":\"MP3\", "
-      "\"sampleRateHertz\":16000}}";
+void googleTextToSpeech(const String& text, const char* outputPath) {
+  WiFiClientSecure client;
+  client.setInsecure();  // Disable certificate verification for simplicity (not
+                         // recommended for production)
+  HTTPClient http;
 
-  String response = makeHTTPSRequest(
-      "POST", googleURL + "text:synthesize?key=" + googleAPIKey, payload,
-      "application/json");
+  // Google API URL with API Key
+  String googleURL =
+      "https://texttospeech.googleapis.com/v1/text:synthesize?key=" +
+      String(googleAPIKey);
 
-  // Parse the response
-  DynamicJsonDocument doc(1024);
-  deserializeJson(doc, response);
-  String audioContent =
-      doc["audioContent"];  // Assuming 'audioContent' holds relevant data
-  Serial.println("Audio content received:");
-  Serial.println(audioContent);
+  // Setup JSON payload
+  String payload = "{\"input\":{\"text\":\"" + text +
+                   "\"},\"voice\":{\"languageCode\":\"en-US\",\"ssmlGender\":"
+                   "\"FEMALE\"},\"audioConfig\":{\"audioEncoding\":\"mp3\"}}";
 
-  if (saveDecodedAudio(audioContent, "/tts.mp3")) {
-    Serial.println("Audio content saved successfully.");
-    // playWAVFile("/tts.wav");
+  http.begin(client, googleURL);
+  http.addHeader("Content-Type", "application/json");
+
+  int httpCode = http.POST(payload);  // Send the request
+
+  if (httpCode == HTTP_CODE_OK) {
+    File file = LittleFS.open(outputPath, "w");
+    if (!file) {
+      Serial.println("Failed to open file for writing");
+      return;
+    }
+
+    // Get the response as a stream
+    WiFiClient* stream = http.getStreamPtr();
+
+    // Read all the data received and save it to the file
+    uint8_t buffer[1024];  // Buffer to hold chunks of data
+    while (http.connected() && stream->available()) {
+      size_t len = stream->readBytes(buffer, sizeof(buffer));
+      if (len > 0) {
+        file.write(buffer, len);  // Write to file
+      }
+    }
+    file.close();  // Close the file when done
+    Serial.println("Audio content saved successfully to LittleFS");
   } else {
-    Serial.println("Failed to save audio content.");
+    Serial.println("Error in HTTP request: " + http.errorToString(httpCode));
   }
+
+  http.end();  // End the HTTP connection
 }
 
 #endif GOOGLE_TTS_H

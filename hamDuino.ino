@@ -30,7 +30,7 @@ void loop() {
           Serial.println(getCurrentTime());
           Serial.println("Playing audio...");
           // playWAVFile("/wsce496.wav");
-          googleTextToSpeech("Hello, world!");
+          googleTextToSpeech("Hello, world!", "/tts.mp3.b64");
         },
         30);
 }

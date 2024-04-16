@@ -17,7 +17,7 @@ const String webServerName = "HamDuino";
 ESPWiFi wifi = ESPWiFi("HamDuino", "abcd1234");
 
 void setup() {
-  initializeSerial();
+  initializeData();
   initializeWebServer();
   initializeAudio();
 }
@@ -27,24 +27,38 @@ void loop() {
   handleAudio();
    runAtInterval(
         []() {
-          Serial.println("Playing audio...");
-          playWAVFile("/wsce496.wav");
           Serial.println(getCurrentTime());
-          googleTextToSpeech("Hello, world!", [](String audioContent) {
-            Serial.println("Google TTS callback");
-            Serial.println(audioContent);
-          });
+          Serial.println("Playing audio...");
+          // playWAVFile("/wsce496.wav");
+          googleTextToSpeech("Hello, world!");
         },
-        9);
+        30);
 }
 
-void initializeSerial() {
+void initializeData() {
   Serial.begin(115200);
   while (!Serial) {};
   Serial.println("HamDuino starting up...");
+  if (!LittleFS.begin()) {
+        Serial.println("An Error has occurred while mounting LittleFS");
+        return;
+    }
 }
 
 void initializeWebServer() {
+
+  // List all files in the LittleFS
+    wifi.webServer.on("/files", HTTP_GET, []() {
+        String message = "Files on LittleFS:<br>";
+        Dir dir = LittleFS.openDir("/");
+        while (dir.next()) {
+            String fileName = dir.fileName();
+            message += "<a href=\"" + fileName + "\">" + fileName + "</a><br>";
+        }
+        wifi.webServer.send(200, "text/html", message);
+    });
+
+
   wifi.enableMDNS(webServerName);
   wifi.start();
 }

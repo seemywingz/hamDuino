@@ -32,9 +32,7 @@ void stopAudio() {
 }
 
 void playWAVFile(const char *filename) {
-  if (fileLFS != nullptr) {
-    delete fileLFS;
-  }
+  stopAudio();
   fileLFS = new AudioFileSourceLittleFS(filename);
   ptt.on();
   delay(300);

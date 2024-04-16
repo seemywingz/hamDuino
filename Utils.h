@@ -6,6 +6,8 @@
 #include <LittleFS.h>
 #include <WiFiClient.h>
 
+#include "Base64.h"
+
 // Time
 static unsigned long lastIntervalRun = 0;
 
@@ -87,5 +89,26 @@ String getCurrentTime() {
     }
   }
 }
+bool saveDecodedAudio(String base64Audio, const char* filePath) {
+  File file = LittleFS.open(filePath, "w");
+  if (!file) {
+    Serial.println("Failed to open file for writing");
+    return false;
+  }
 
+  // Decode base64 string to binary and write to file
+  int inputLength = base64Audio.length();
+  unsigned char* decodedBytes =
+      new unsigned char[(inputLength * 3) /
+                        4];  // Allocate buffer for decoded bytes
+
+  int bytesDecoded =
+      base64_decode(base64Audio.c_str(), decodedBytes, (inputLength * 3) / 4);
+
+  file.write(decodedBytes, bytesDecoded);
+
+  delete[] decodedBytes;  // Free up the buffer
+  file.close();
+  return true;
+}
 #endif UTILS_H

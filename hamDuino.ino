@@ -6,11 +6,11 @@
 #include "GoogleTTS.h"
 
 // WeMos Pin Config:
-// Radio SPK: A0
-// Radio PTT: D6 (12)
-// Audio DIN: RX (03)
-// Audio BCK: D8 (15)
-// Audio LCK: D4 (02)
+// RX Radio SPK: A0
+// TX Radio PTT: D6 (12)
+// TX Audio DIN: RX (03)
+// TX Audio BCK: D8 (15)
+// TX Audio LCK: D4 (02)
 
 // Web Server
 const String webServerName = "HamDuino";

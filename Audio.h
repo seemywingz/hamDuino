@@ -35,7 +35,7 @@ void playWAVFile(const char *filename) {
   stopAudio();
   fileLFS = new AudioFileSourceLittleFS(filename);
   ptt.on();
-  delay(500);
+  delay(300);
   if (!wav->begin(fileLFS, dac)) {
     Serial.println("Failed to begin WAV playback");
     return;
@@ -55,9 +55,9 @@ void handleAudio() {
         int audioLevel = spk.readA();
         // Serial.println("RX Audio Level: " + String(audioLevel));
         if (audioLevel > 1000) {
-          Serial.println("RX Audio detected, triggering PTT");
+          Serial.println("RX Audio: " + String(audioLevel));
           ptt.on();
-        } else if (!wav->isRunning()) {
+        } else if (!wav->isRunning() && audioLevel < 1000) {
           ptt.off();
         }
       },

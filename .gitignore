@@ -1,4 +1,4 @@
 .DS_Store
 .arduino/
 # .vscode/
-data/googleAPIKey
+data/openAI.key

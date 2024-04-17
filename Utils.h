@@ -1,17 +1,35 @@
 #ifndef UTILS_H
 #define UTILS_H
+
 #include <ArduinoJson.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
 #include <LittleFS.h>
 #include <WiFiClient.h>
 
-#include "Base64.h"
+String readFile(const String& path) {
+  File file = LittleFS.open(path, "r");
+  if (!file) {
+    return "Failed to open " + path + " for reading";
+  }
+  String fileContents = file.readString();
+  file.close();
+  return fileContents;
+}
+
+void writeFile(const String& path, const String& contents) {
+  File file = LittleFS.open(path, "w");
+  if (!file) {
+    Serial.println("Failed to open " + path + " for writing");
+    return;
+  }
+  file.print(contents);
+  file.close();
+}
 
 void runAtInterval(void (*functionToRun)(), unsigned long& lastIntervalRun,
                    unsigned int interval) {
   unsigned long currentRunTime = millis();
-
   if (currentRunTime - lastIntervalRun >= interval) {
     lastIntervalRun = currentRunTime;
     functionToRun();
@@ -19,17 +37,23 @@ void runAtInterval(void (*functionToRun)(), unsigned long& lastIntervalRun,
 }
 
 String makeHTTPSRequest(const String& method, const String& url,
-                        const String& payload = "",
-                        const String& contentType = "") {
+                        const String& token = "",
+                        const String& contentType = "",
+                        const String& payload = "") {
   WiFiClientSecure client;  // Using WiFiClientSecure for HTTPS
   client.setInsecure();     // Disable certificate verification (not recommended
                             // for production)
   HTTPClient http;
   http.begin(client, url);  // Start the client with URL
 
-  // Adding headers if it's a POST request with content
-  if (method == "POST" && !payload.isEmpty() && !contentType.isEmpty()) {
-    http.addHeader("Content-Type", contentType);
+  // Set headers if necessary
+  if (method == "POST") {
+    if (!contentType.isEmpty()) {
+      http.addHeader("Content-Type", contentType);
+    }
+    if (!token.isEmpty()) {
+      http.addHeader("Authorization", "Bearer " + token);
+    }
   }
 
   // Make the HTTP request according to the method
@@ -86,26 +110,5 @@ String getCurrentTime() {
     }
   }
 }
-bool saveDecodedAudio(String base64Audio, const char* filePath) {
-  File file = LittleFS.open(filePath, "w");
-  if (!file) {
-    Serial.println("Failed to open file for writing");
-    return false;
-  }
 
-  // Decode base64 string to binary and write to file
-  int inputLength = base64Audio.length();
-  unsigned char* decodedBytes =
-      new unsigned char[(inputLength * 3) /
-                        4];  // Allocate buffer for decoded bytes
-
-  int bytesDecoded =
-      base64_decode(base64Audio.c_str(), decodedBytes, (inputLength * 3) / 4);
-
-  file.write(decodedBytes, bytesDecoded);
-
-  delete[] decodedBytes;  // Free up the buffer
-  file.close();
-  return true;
-}
 #endif UTILS_H

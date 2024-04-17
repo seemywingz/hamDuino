@@ -3,7 +3,7 @@
 
 #include "Utils.h"
 #include "Audio.h"
-#include "GoogleTTS.h"
+#include "OpenAI.h"
 
 // WeMos Pin Config:
 // RX Radio SPK: A0
@@ -29,16 +29,19 @@ unsigned long lastLoopRun = 0;
 void loop() {
   wifi.handleClient();
   handleAudio();
+  
   runAtInterval([]() {
     Serial.println(getCurrentTime());
     Serial.println("Playing audio...");
     playWAVFile("/wsce496.wav");
-  }, lastLoopRun, 18000);
-  // if (!ranOnce){ 
-    // Serial.println("Generating TTS...");
-    // googleTextToSpeech("Hello, world!", "/tts.mp3");
-    // ranOnce = true;
-  // }
+  }, lastLoopRun, 60000);
+
+  if (!ranOnce){ 
+    Serial.println("Generating TTS...");
+    openAI_TTS("Hello, World, this is HamDuino!", "/tts.wav");
+    playWAVFile("/tts.wav");
+    ranOnce = true;
+  }
 }
 
 void initializeData() {
@@ -49,7 +52,7 @@ void initializeData() {
         Serial.println("An Error has occurred while mounting LittleFS");
         return;
     }
-  readGoogleAPIKey("/googleAPIKey");
+  readOpenAIKey("/openAI.key");
 }
 
 void initializeWebServer() {

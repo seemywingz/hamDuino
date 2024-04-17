@@ -1,6 +1,7 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
+// #include <AudioFileSourceID3.h>
 #include <AudioFileSourceLittleFS.h>
 #include <AudioGeneratorWAV.h>
 #include <AudioOutputI2S.h>
@@ -21,10 +22,12 @@ void initializeAudio() {
   dac = new AudioOutputI2S();
   dac->SetPinout(15, 2, 3);  // BCLK, LRC, DOUT
   wav = new AudioGeneratorWAV();
+  ptt.off();
 }
 
 void stopAudio() {
   wav->stop();
+  // mp3->stop();
   if (fileLFS != nullptr) {
     delete fileLFS;
     fileLFS = nullptr;
@@ -35,7 +38,7 @@ void playWAVFile(const char *filename) {
   stopAudio();
   fileLFS = new AudioFileSourceLittleFS(filename);
   ptt.on();
-  delay(300);
+  delay(600);
   if (!wav->begin(fileLFS, dac)) {
     Serial.println("Failed to begin WAV playback");
     return;
@@ -43,7 +46,6 @@ void playWAVFile(const char *filename) {
 }
 
 unsigned long lastAudioCheck = 0;
-
 void handleAudio() {
   if (wav->isRunning()) {
     if (!wav->loop()) {
@@ -57,7 +59,8 @@ void handleAudio() {
         if (audioLevel > 1000) {
           Serial.println("RX Audio: " + String(audioLevel));
           ptt.on();
-        } else if (!wav->isRunning() && audioLevel < 1000) {
+        }
+        if (!wav->isRunning() && audioLevel < 1000) {
           ptt.off();
         }
       },

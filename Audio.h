@@ -77,7 +77,7 @@ void handleAudio() {
                                   // receiving audio
             receivingAudio = true;
             responded = false;
-            // ptt.on();   // Enable push-to-talk
+            // ptt.on();  // Enable push-to-talk
           }
         } else {
           if (receivingAudio) {  // Only change state if it was previously
@@ -86,11 +86,10 @@ void handleAudio() {
           }
         }
 
-        if (!receivingAudio &&
-            !responded) {  // Only tell a joke if audio was received and no
-                           // response has been made
+        if (!receivingAudio && !responded) {
+          Serial.println("Responding to audio...");
           tellJoke();
-          responded = true;  // Set the flag to prevent repeated responses
+          responded = true;
         }
       },
       lastAudioCheck, 100);

@@ -76,14 +76,15 @@ String openAIChat(String text) {
 
   // Prepare the JSON payload
   DynamicJsonDocument doc(1024);
-  doc["model"] = "gpt-3.5-turbo";
+  doc["model"] = "gpt-4-turbo-preview";
   doc["messages"] = JsonArray();
   doc["messages"].add(JsonObject());
   doc["messages"][0]["role"] = "system";
   doc["messages"][0]["content"] =
       "You are an AI ham radio operator."
-      "Your call sign is wsce496."
+      "Your call sign is WSCE496 or W S C E 4 9 6."
       "Use the call sign to refer to yourself."
+      "End with your call sign, or other radio appropriate etiquette."
       "Use the NATO phonetic alphabet when reciting letters."
       "You are here to help the user with their questions."
       "You can also tell jokes."

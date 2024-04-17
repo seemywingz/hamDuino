@@ -22,30 +22,18 @@ void setup() {
   initializeAudio();
 }
 
-boolean ranOnce = false;
+boolean runOnBoot = false;
 
 unsigned long lastLoopRun = 0;
 
 void loop() {
   wifi.handleClient();
   handleAudio();
-  
-  runAtInterval([]() {
-    
-    String currentTime = getCurrentTime();
-    Serial.println(currentTime);
 
+  if(!runOnBoot) {
+    runOnBoot = true;
     String ttsFile = "/tts.wav";
-    openAI_TTS(currentTime, ttsFile);
-    playWAVFile(ttsFile.c_str());
-    // playWAVFile("/wsce496.wav");
-
-  }, lastLoopRun, 60000);
-
-  if(!ranOnce) {
-    ranOnce = true;
-    String ttsFile = "/tts.wav";
-    openAI_TTS("Hello, From WHISKEY SIERRA CHARLIE ECHO 4 9 6 Repeater. I am an AI ham radio operator. I am here to help you. Please ask me anything.", ttsFile);
+    openAI_TTS("Hello, From WHISKEY SIERRA CHARLIE ECHO 4 9 6 Repeater. I am an AI ham radio operator. Please, ask me anything.", ttsFile);
     playWAVFile(ttsFile.c_str());
   }
 

@@ -7,6 +7,7 @@
 #include <AudioOutputI2S.h>
 #include <IOPin.h>
 
+#include "OpenAI.h"
 #include "Utils.h"
 
 // Audio
@@ -17,6 +18,9 @@ AudioOutputI2S *dac;
 // Pins
 IOPin ptt = IOPin(12);
 IOPin spk = IOPin(A0, INPUT);
+
+bool receivingAudio = false;
+bool responded = true;
 
 void initializeAudio() {
   dac = new AudioOutputI2S();
@@ -45,23 +49,48 @@ void playWAVFile(const char *filename) {
   }
 }
 
+void tellJoke() {
+  String ttsFile = "/tts.wav";
+  String whatToSay = openAIChat("tell a Joke.");
+  Serial.println(whatToSay);
+  openAI_TTS(whatToSay, ttsFile);
+  playWAVFile(ttsFile.c_str());
+}
+
 unsigned long lastAudioCheck = 0;
 void handleAudio() {
   if (wav->isRunning()) {
     if (!wav->loop()) {
       stopAudio();
     }
+  } else if (!wav->isRunning() && !receivingAudio) {
+    ptt.off();  // Turn off push-to-talk when audio is not playing
   }
+
   runAtInterval(
       []() {
         int audioLevel = spk.readA();
-        // Serial.println("RX Audio Level: " + String(audioLevel));
-        if (audioLevel > 1000) {
+        if (audioLevel > 1000) {  // Assuming 1000 is your threshold for
+                                  // detecting received audio
           Serial.println("RX Audio: " + String(audioLevel));
-          ptt.on();
+          if (!receivingAudio) {  // Only change state if previously not
+                                  // receiving audio
+            receivingAudio = true;
+            responded = false;
+            // ptt.on();   // Enable push-to-talk
+          }
+        } else {
+          if (receivingAudio) {  // Only change state if it was previously
+                                 // receiving
+            receivingAudio = false;
+          }
         }
-        if (!wav->isRunning() && audioLevel < 1000) {
-          ptt.off();
+
+        if (!receivingAudio &&
+            !responded) {  // Only tell a joke if audio was received and no
+                           // response has been made
+          tellJoke();
+          responded = true;  // Set the flag to prevent repeated responses
         }
       },
       lastAudioCheck, 100);

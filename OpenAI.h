@@ -12,6 +12,11 @@ String readOpenAIKey(String apiKeyFile) {
 }
 
 void openAI_TTS(String text, String filePath) {
+  if (openAIKey == "") {
+    Serial.println("OpenAI key not set, please call readOpenAIKey() first");
+    return;
+  }
+
   String url = openAI_URL + "audio/speech";
 
   // Prepare the JSON payload
@@ -59,6 +64,52 @@ void openAI_TTS(String text, String filePath) {
   }
 
   http.end();  // End the connection
+}
+
+String openAIChat(String text) {
+  if (openAIKey == "") {
+    Serial.println("OpenAI key not set, please call readOpenAIKey() first");
+    return "";
+  }
+
+  String url = openAI_URL + "chat/completions";
+
+  // Prepare the JSON payload
+  DynamicJsonDocument doc(1024);
+  doc["model"] = "gpt-3.5-turbo";
+  doc["messages"] = JsonArray();
+  doc["messages"].add(JsonObject());
+  doc["messages"][0]["role"] = "system";
+  doc["messages"][0]["content"] =
+      "You are an AI ham radio operator."
+      "Your call sign is wsce496."
+      "Use the call sign to refer to yourself."
+      "Use the NATO phonetic alphabet when reciting letters."
+      "You are here to help the user with their questions."
+      "You can also tell jokes."
+      "Be as funny and punny as possible when telling jokes"
+      "try to keep jokes radio related.";
+  doc["messages"].add(JsonObject());
+  doc["messages"][1]["role"] = "user";
+  doc["messages"][1]["content"] = text;
+  doc["max_tokens"] = 60;
+  String payload;
+  serializeJson(doc, payload);
+  String contentType = "application/json";
+
+  // Make the request
+  String response =
+      makeHTTPSRequest("POST", url, openAIKey, contentType, payload);
+
+  DynamicJsonDocument resDoc(1024);
+  deserializeJson(resDoc, response);
+  if (resDoc["choices"][0]["message"]["content"].is<String>()) {
+    return resDoc["choices"][0]["message"]["content"].as<String>();
+  } else {
+    return "Error parsing response";
+  }
+
+  return "Sorry, I didn't understand that. Please try again.";
 }
 
 #endif OPENAI_H

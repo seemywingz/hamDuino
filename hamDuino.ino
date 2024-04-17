@@ -31,17 +31,17 @@ void loop() {
   handleAudio();
   
   runAtInterval([]() {
-    Serial.println(getCurrentTime());
-    Serial.println("Playing audio...");
-    playWAVFile("/wsce496.wav");
+    
+    String currentTime = getCurrentTime();
+    Serial.println(currentTime);
+
+    String ttsFile = "/tts.wav";
+    openAI_TTS(currentTime, ttsFile);
+    playWAVFile(ttsFile.c_str());
+    // playWAVFile("/wsce496.wav");
+    
   }, lastLoopRun, 60000);
 
-  if (!ranOnce){ 
-    Serial.println("Generating TTS...");
-    openAI_TTS("Hello, World, this is HamDuino!", "/tts.wav");
-    playWAVFile("/tts.wav");
-    ranOnce = true;
-  }
 }
 
 void initializeData() {

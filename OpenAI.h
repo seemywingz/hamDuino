@@ -39,6 +39,7 @@ void openAI_TTS(String text, String filePath) {
 
   if (httpCode == HTTP_CODE_OK) {
     // Open the file for writing in binary mode
+    Serial.println("OpenAI TTS request successful, writing to file...");
     File file = LittleFS.open(filePath, "w+");
     if (!file) {
       Serial.println("Failed to open file for writing");

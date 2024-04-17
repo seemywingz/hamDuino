@@ -114,4 +114,80 @@ String openAIChat(String text) {
   return "Sorry, I didn't understand that. Please try again.";
 }
 
+String openAI_STT(const String& filePath) {
+  if (openAIKey.isEmpty()) {
+    Serial.println("OpenAI key not set, please set your OpenAI API key");
+    return "API key not set";
+  }
+
+  File audioFile = LittleFS.open(filePath, "r");
+  if (!audioFile) {
+    Serial.println("Failed to open file for reading");
+    return "Failed to open file";
+  }
+
+  HTTPClient http;
+  WiFiClientSecure client;
+  client.setInsecure();  // Not recommended for production, manage SSL properly
+
+  String url = "https://api.openai.com/v1/audio/transcriptions";
+  http.begin(client, url);  // Start the client with URL
+
+  String boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW";
+  String contentType = "multipart/form-data; boundary=" + boundary;
+  http.addHeader("Content-Type", contentType);
+  http.addHeader("Authorization", "Bearer " + openAIKey);
+
+  String body;
+  String modelPart =
+      "--" + boundary +
+      "\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\nwhisper-1\r\n";
+  String header = "--" + boundary +
+                  "\r\nContent-Disposition: form-data; name=\"file\"; "
+                  "filename=\"audio.wav\"\r\nContent-Type: audio/wav\r\n\r\n";
+  String footer = "\r\n--" + boundary + "--";
+
+  http.addHeader("Content-Length",
+                 String(header.length() + audioFile.size() +
+                        modelPart.length() + footer.length()));
+
+  // Start the POST request
+  http.POST("");
+
+  // Send header and file content
+  http.getStream().print(header);
+  byte buffer[512];
+  size_t bytesRead = 0;
+  while ((bytesRead = audioFile.read(buffer, sizeof(buffer))) > 0) {
+    http.getStream().write(buffer, bytesRead);
+  }
+
+  // Send model part and footer
+  http.getStream().print(modelPart);
+  http.getStream().print(footer);
+
+  // Finish the POST request
+  int httpCode = http.GET();  // Strange usage but necessary with this
+                              // HTTPClient library version
+  String response;
+  if (httpCode == HTTP_CODE_OK) {
+    response = http.getString();
+    DynamicJsonDocument doc(1024);
+    deserializeJson(doc, response);
+    audioFile.close();
+    http.end();  // Close connection
+
+    if (doc.containsKey("text")) {
+      return doc["text"].as<String>();
+    } else {
+      return "No text found in response";
+    }
+  } else {
+    audioFile.close();
+    http.end();  // Close connection
+    Serial.println("Failed to complete the request");
+    return response = http.getString();
+  }
+}
+
 #endif OPENAI_H

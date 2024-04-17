@@ -49,12 +49,13 @@ void playWAVFile(const char *filename) {
   }
 }
 
-void tellJoke() {
+void respond() {
   String ttsFile = "/tts.wav";
   String whatToSay = openAIChat("tell a Joke.");
   Serial.println(whatToSay);
   openAI_TTS(whatToSay, ttsFile);
   playWAVFile(ttsFile.c_str());
+  // Serial.println("Speech to Text" + openAI_STT("/speech.wav"));
 }
 
 unsigned long lastAudioCheck = 0;
@@ -88,7 +89,7 @@ void handleAudio() {
 
         if (!receivingAudio && !responded) {
           Serial.println("Responding to audio...");
-          tellJoke();
+          respond();
           responded = true;
         }
       },

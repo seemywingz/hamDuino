@@ -39,8 +39,15 @@ void loop() {
     openAI_TTS(currentTime, ttsFile);
     playWAVFile(ttsFile.c_str());
     // playWAVFile("/wsce496.wav");
-    
+
   }, lastLoopRun, 60000);
+
+  if(!ranOnce) {
+    ranOnce = true;
+    String ttsFile = "/tts.wav";
+    openAI_TTS("Hello, From WHISKEY SIERRA CHARLIE ECHO 4 9 6 Repeater. I am an AI ham radio operator. I am here to help you. Please ask me anything.", ttsFile);
+    playWAVFile(ttsFile.c_str());
+  }
 
 }
 

@@ -18,7 +18,7 @@ void openAI_TTS(String text, String filePath) {
   DynamicJsonDocument doc(1024);
   doc["model"] = "tts-1";
   doc["input"] = text;
-  doc["voice"] = "alloy";
+  doc["voice"] = "nova";
   doc["response_format"] = "wav";
   String payload;
   serializeJson(doc, payload);

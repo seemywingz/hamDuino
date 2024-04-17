@@ -86,8 +86,8 @@ String formatTimeForSpeech(const String& dateTime) {
   }
   if (hour == 0) hour = 12;
 
-  String timeForSpeech = String(hour) + " " + (minute < 10 ? "oh " : "") +
-                         String(minute) + " " + ampm;
+  String timeForSpeech = String(hour) + " " + (minute < 10 ? "\'o\' " : "") +
+                         String(minute) + " " + ampm + ".";
   return timeForSpeech;
 }
 

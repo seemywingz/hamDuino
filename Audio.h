@@ -1,7 +1,7 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-// #include <AudioFileSourceID3.h>
+#include <AudioFileSourceHTTPStream.h>
 #include <AudioFileSourceLittleFS.h>
 #include <AudioGeneratorWAV.h>
 #include <AudioOutputI2S.h>
@@ -12,6 +12,7 @@
 
 // Audio
 AudioFileSourceLittleFS *fileLFS;
+AudioFileSourceHTTPStream *fileStream;
 AudioGeneratorWAV *wav;
 AudioOutputI2S *dac;
 

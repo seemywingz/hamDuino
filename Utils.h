@@ -27,8 +27,8 @@ void writeFile(const String& path, const String& contents) {
   file.close();
 }
 
-void runAtInterval(void (*functionToRun)(), unsigned long& lastIntervalRun,
-                   unsigned int interval) {
+void runAtInterval(std::function<void()> functionToRun,
+                   unsigned long& lastIntervalRun, unsigned int interval) {
   unsigned long currentRunTime = millis();
   if (currentRunTime - lastIntervalRun >= interval) {
     lastIntervalRun = currentRunTime;

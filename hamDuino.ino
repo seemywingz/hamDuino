@@ -28,7 +28,14 @@ unsigned long lastLoopRun = 0;
 
 void loop() {
   wifi.handleClient();
-  handleAudio();
+  handleAudio([](){
+     Serial.println("Responding to RX");
+     String whatToSay = openAIChat("tell a Joke or provide some radio knowledge.");
+     Serial.println(whatToSay);
+     String ttsFile = "/tts.mp3";
+     openAI_TTS(whatToSay, ttsFile);
+     playAudioFile(ttsFile);
+  });
 
   if(!runOnBoot) {
     runOnBoot = true;

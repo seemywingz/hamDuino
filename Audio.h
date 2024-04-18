@@ -82,10 +82,10 @@ void respond() {
 }
 
 unsigned long lastAudioCheck = 0;
-void handleAudio() {
+void handleAudio(std::function<void()> respond) {
   stopAudio();
   runAtInterval(
-      []() {
+      [&]() {
         int audioLevel = spk.readA();
         if (audioLevel > 1000) {
           Serial.println("RX Audio: " + String(audioLevel));

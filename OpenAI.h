@@ -89,11 +89,14 @@ String openAIChat(String text) {
       "Use the call sign to refer to yourself."
       "End with your call sign, or other radio appropriate etiquette, but mix "
       "it up."
-      "Use the NATO phonetic alphabet when reciting letters."
+      "Use the NATO phonetic alphabet when reciting letters, but ony sometimes "
+      "when reciting your call sign."
       "You are here to help the user with their questions."
       "You can also tell jokes."
       "Be as funny and punny as possible when telling jokes"
-      "try to keep jokes radio related.";
+      "try to keep jokes radio, circuitry, or electronics related, but you can "
+      "throw "
+      "zingers in there too.";
   doc["messages"].add(JsonObject());
   doc["messages"][1]["role"] = "user";
   doc["messages"][1]["content"] = text;

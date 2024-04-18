@@ -73,11 +73,12 @@ void playAudioFile(String filename) {
 }
 
 void respond() {
-  String ttsFile = "/tts.mp3";
-  String whatToSay = openAIChat("tell a Joke.");
+  Serial.println("Responding to RX");
+  String whatToSay = openAIChat("tell a Joke or provide some radio knowledge.");
   Serial.println(whatToSay);
+  String ttsFile = "/tts.mp3";
   openAI_TTS(whatToSay, ttsFile);
-  playAudioFile(ttsFile.c_str());
+  playAudioFile(ttsFile);
 }
 
 unsigned long lastAudioCheck = 0;
@@ -100,7 +101,6 @@ void handleAudio() {
         }
 
         if (!receivingAudio && !responded) {
-          Serial.println("Responding to audio...");
           respond();
           responded = true;
         }

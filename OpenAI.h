@@ -95,8 +95,7 @@ String openAIChat(String text) {
       "You can also tell jokes."
       "Be as funny and punny as possible when telling jokes"
       "try to keep jokes radio, circuitry, or electronics related, but you can "
-      "throw "
-      "zingers in there too.";
+      "throw zingers in there too.";
   doc["messages"].add(JsonObject());
   doc["messages"][1]["role"] = "user";
   doc["messages"][1]["content"] = text;

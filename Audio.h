@@ -2,6 +2,7 @@
 #define AUDIO_H
 
 #include <AudioFileSourceLittleFS.h>
+#include <AudioGeneratorMP3.h>
 #include <AudioGeneratorWAV.h>
 #include <AudioOutputI2S.h>
 #include <IOPin.h>
@@ -12,6 +13,7 @@
 // Audio
 AudioFileSourceLittleFS *fileLFS;
 AudioGeneratorWAV *wav;
+AudioGeneratorMP3 *mp3;
 AudioOutputI2S *dac;
 
 // Pins
@@ -25,6 +27,7 @@ void initializeAudio() {
   dac = new AudioOutputI2S();
   dac->SetPinout(15, 2, 3);  // BCLK, LRC, DOUT
   wav = new AudioGeneratorWAV();
+  mp3 = new AudioGeneratorMP3();
   ptt.off();
 }
 
@@ -32,6 +35,10 @@ void stopAudio() {
   if (wav->isRunning()) {
     if (!wav->loop()) {
       wav->stop();
+    }
+  } else if (mp3->isRunning()) {
+    if (!mp3->loop()) {
+      mp3->stop();
     }
   } else if (!receivingAudio) {
     ptt.off();
@@ -53,6 +60,12 @@ void playAudioFile(String filename) {
       Serial.println("Failed to begin WAV playback");
       return;
     }
+  } else if (fileExtention == "mp3") {
+    Serial.println("Playing MP3 file: " + String(filename));
+    if (!mp3->begin(fileLFS, dac)) {
+      Serial.println("Failed to begin MP3 playback");
+      return;
+    }
   } else {
     Serial.println("Unsupported file format: " + fileExtention);
     return;
@@ -60,7 +73,7 @@ void playAudioFile(String filename) {
 }
 
 void respond() {
-  String ttsFile = "/tts.wav";
+  String ttsFile = "/tts.mp3";
   String whatToSay = openAIChat("tell a Joke.");
   Serial.println(whatToSay);
   openAI_TTS(whatToSay, ttsFile);

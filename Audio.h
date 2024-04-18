@@ -1,7 +1,6 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-#include <AudioFileSourceHTTPStream.h>
 #include <AudioFileSourceLittleFS.h>
 #include <AudioGeneratorWAV.h>
 #include <AudioOutputI2S.h>
@@ -12,7 +11,6 @@
 
 // Audio
 AudioFileSourceLittleFS *fileLFS;
-AudioFileSourceHTTPStream *fileStream;
 AudioGeneratorWAV *wav;
 AudioOutputI2S *dac;
 
@@ -31,21 +29,32 @@ void initializeAudio() {
 }
 
 void stopAudio() {
-  wav->stop();
-  // mp3->stop();
-  if (fileLFS != nullptr) {
-    delete fileLFS;
-    fileLFS = nullptr;
+  if (wav->isRunning()) {
+    if (!wav->loop()) {
+      wav->stop();
+    }
+  } else if (!receivingAudio) {
+    ptt.off();
   }
 }
 
-void playWAVFile(const char *filename) {
+void playAudioFile(String filename) {
   stopAudio();
-  fileLFS = new AudioFileSourceLittleFS(filename);
+
+  delete fileLFS;
+  fileLFS = new AudioFileSourceLittleFS(filename.c_str());
   ptt.on();
   delay(600);
-  if (!wav->begin(fileLFS, dac)) {
-    Serial.println("Failed to begin WAV playback");
+
+  String fileExtention = getFileExtension(filename);
+  if (fileExtention == "wav") {
+    Serial.println("Playing WAV file: " + String(filename));
+    if (!wav->begin(fileLFS, dac)) {
+      Serial.println("Failed to begin WAV playback");
+      return;
+    }
+  } else {
+    Serial.println("Unsupported file format: " + fileExtention);
     return;
   }
 }
@@ -55,35 +64,24 @@ void respond() {
   String whatToSay = openAIChat("tell a Joke.");
   Serial.println(whatToSay);
   openAI_TTS(whatToSay, ttsFile);
-  playWAVFile(ttsFile.c_str());
-  // Serial.println("Speech to Text" + openAI_STT("/speech.wav"));
+  playAudioFile(ttsFile.c_str());
 }
 
 unsigned long lastAudioCheck = 0;
 void handleAudio() {
-  if (wav->isRunning()) {
-    if (!wav->loop()) {
-      stopAudio();
-    }
-  } else if (!wav->isRunning() && !receivingAudio) {
-    ptt.off();  // Turn off push-to-talk when audio is not playing
-  }
-
+  stopAudio();
   runAtInterval(
       []() {
         int audioLevel = spk.readA();
-        if (audioLevel > 1000) {  // Assuming 1000 is your threshold for
-                                  // detecting received audio
+        if (audioLevel > 1000) {
           Serial.println("RX Audio: " + String(audioLevel));
-          if (!receivingAudio) {  // Only change state if previously not
-                                  // receiving audio
+          if (!receivingAudio) {
             receivingAudio = true;
             responded = false;
             // ptt.on();  // Enable push-to-talk
           }
         } else {
-          if (receivingAudio) {  // Only change state if it was previously
-                                 // receiving
+          if (receivingAudio) {
             receivingAudio = false;
           }
         }

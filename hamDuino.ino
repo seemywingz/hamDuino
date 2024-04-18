@@ -32,9 +32,10 @@ void loop() {
 
   if(!runOnBoot) {
     runOnBoot = true;
-    String ttsFile = "/tts.wav";
+    String fileType = "wav";
+    String ttsFile = "/tts." + fileType;
     openAI_TTS("Hello, From WHISKEY SIERRA CHARLIE ECHO 4 9 6 Repeater. I am an AI ham radio operator. Please, ask me anything.", ttsFile);
-    playWAVFile(ttsFile.c_str());
+    playAudioFile(ttsFile);
   }
 
 }

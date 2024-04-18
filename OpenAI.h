@@ -19,12 +19,15 @@ void openAI_TTS(String text, String filePath) {
 
   String url = openAI_URL + "audio/speech";
 
+  String fileType = getFileExtension(filePath);
+
   // Prepare the JSON payload
   DynamicJsonDocument doc(1024);
   doc["model"] = "tts-1";
   doc["input"] = text;
   doc["voice"] = "nova";
-  doc["response_format"] = "wav";
+  doc["response_format"] = fileType;
+
   String payload;
   serializeJson(doc, payload);
   String contentType = "application/json";
@@ -34,13 +37,13 @@ void openAI_TTS(String text, String filePath) {
   client.setInsecure();  // Disable certificate verification (not recommended
                          // for production)
   HTTPClient http;
-  http.begin(client, url);  // Start the client with URL
+  http.begin(client, url);
 
   // Set headers
   http.addHeader("Content-Type", contentType);
   http.addHeader("Authorization", "Bearer " + openAIKey);
 
-  int httpCode = http.POST(payload);  // Perform the POST request
+  int httpCode = http.POST(payload);
 
   if (httpCode == HTTP_CODE_OK) {
     // Open the file for writing in binary mode
@@ -56,14 +59,14 @@ void openAI_TTS(String text, String filePath) {
     // This handles the binary data appropriately by treating it as a stream of
     // bytes
     http.writeToStream(&file);
-    file.close();  // Make sure to close the file to save the data
+    file.close();
     Serial.println("File written successfully");
   } else {
     Serial.print("HTTP POST failed, error: ");
     Serial.println(http.errorToString(httpCode).c_str());
   }
 
-  http.end();  // End the connection
+  http.end();
 }
 
 String openAIChat(String text) {

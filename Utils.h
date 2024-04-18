@@ -111,4 +111,12 @@ String getCurrentTime() {
   }
 }
 
+String getFileExtension(const String& filename) {
+  int dotIndex = filename.lastIndexOf(".");
+  if (dotIndex == -1) {
+    return "";
+  }
+  return filename.substring(dotIndex + 1);
+}
+
 #endif UTILS_H

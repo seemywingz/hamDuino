@@ -1,9 +1,9 @@
 
 #include <ESPWiFi.h>
 
-#include "Utils.h"
 #include "Audio.h"
 #include "OpenAI.h"
+#include "Utils.h"
 
 // WeMos Pin Config:
 // RX Radio SPK: A0
@@ -28,16 +28,17 @@ unsigned long lastLoopRun = 0;
 
 void loop() {
   wifi.handleClient();
-  handleAudio([](){
-     Serial.println("Responding to RX");
-     String whatToSay = openAIChat("tell a Joke or provide some radio knowledge.");
-     Serial.println(whatToSay);
-     String ttsFile = "/tts.mp3";
-     openAI_TTS(whatToSay, ttsFile);
-     playAudioFile(ttsFile);
+  handleAudio([]() {
+    Serial.println("Responding to RX");
+    String whatToSay = openAIChat(
+        "Provide a question and answer for the HAM radio technician exam.");
+    Serial.println(whatToSay);
+    String ttsFile = "/tts.mp3";
+    openAI_TTS(whatToSay, ttsFile);
+    playAudioFile(ttsFile);
   });
 
-  if(!runOnBoot) {
+  if (!runOnBoot) {
     runOnBoot = true;
     String ttsFile = "/tts.mp3";
     String hello = openAIChat("Say hello and introduce yourself.");
@@ -45,32 +46,24 @@ void loop() {
     openAI_TTS(hello, ttsFile);
     playAudioFile(ttsFile);
   }
-
 }
 
 void initializeData() {
-  Serial.begin(115200);
-  while (!Serial) {};
   Serial.println("HamDuino starting up...");
-  if (!LittleFS.begin()) {
-        Serial.println("An Error has occurred while mounting LittleFS");
-        return;
-    }
   readOpenAIKey("/openAI.key");
 }
 
 void initializeWebServer() {
-
   // List all files in the LittleFS
-    wifi.webServer.on("/files", HTTP_GET, []() {
-        String message = "Files on LittleFS:<br>";
-        Dir dir = LittleFS.openDir("/");
-        while (dir.next()) {
-            String fileName = dir.fileName();
-            message += "<a href=\"" + fileName + "\">" + fileName + "</a><br>";
-        }
-        wifi.webServer.send(200, "text/html", message);
-    });
+  wifi.webServer.on("/files", HTTP_GET, []() {
+    String message = "Files on LittleFS:<br>";
+    Dir dir = LittleFS.openDir("/");
+    while (dir.next()) {
+      String fileName = dir.fileName();
+      message += "<a href=\"" + fileName + "\">" + fileName + "</a><br>";
+    }
+    wifi.webServer.send(200, "text/html", message);
+  });
 
   wifi.enableMDNS(webServerName);
   wifi.start();

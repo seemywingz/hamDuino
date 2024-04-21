@@ -46,9 +46,6 @@ void stopAudio() {
 }
 
 void playAudioFile(String filename) {
-  stopAudio();
-
-  delete fileLFS;
   fileLFS = new AudioFileSourceLittleFS(filename.c_str());
   ptt.on();
   delay(600);

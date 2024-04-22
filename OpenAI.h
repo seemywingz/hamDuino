@@ -25,7 +25,7 @@ void openAI_TTS(String text, String filePath) {
   DynamicJsonDocument doc(1024);
   doc["model"] = "tts-1";
   doc["input"] = text;
-  doc["voice"] = "nova";
+  doc["voice"] = "onyx";
   doc["response_format"] = fileType;
 
   String payload;
@@ -93,7 +93,7 @@ String openAIChat(String text) {
       "You are here to help the user with their questions."
       "You are knowledgeable in all things radio and radio related."
       "You can also tell jokes."
-      "All responses must be less than 100 words.";
+      "All responses must be less than 90 words.";
   doc["messages"].add(JsonObject());
   doc["messages"][1]["role"] = "user";
   doc["messages"][1]["content"] = text;

@@ -13,8 +13,8 @@
 // TX Audio LCK: D4 (02)
 
 // Web Server
-const String webServerName = "HamDuino";
-ESPWiFi wifi = ESPWiFi("HamDuino", "abcd1234");
+const String webServerName = "R.A.D.I.O.";
+ESPWiFi wifi = ESPWiFi("R.A.D.I.O.", "abcd1234");
 
 void setup() {
   initializeData();
@@ -49,22 +49,11 @@ void loop() {
 }
 
 void initializeData() {
-  Serial.println("HamDuino starting up...");
+  Serial.println("R.A.D.I.O. starting up...");
   readOpenAIKey("/openAI.key");
 }
 
 void initializeWebServer() {
-  // List all files in the LittleFS
-  wifi.webServer.on("/files", HTTP_GET, []() {
-    String message = "Files on LittleFS:<br>";
-    Dir dir = LittleFS.openDir("/");
-    while (dir.next()) {
-      String fileName = dir.fileName();
-      message += "<a href=\"" + fileName + "\">" + fileName + "</a><br>";
-    }
-    wifi.webServer.send(200, "text/html", message);
-  });
-
   wifi.enableMDNS(webServerName);
   wifi.start();
 }

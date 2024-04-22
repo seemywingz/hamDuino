@@ -13,8 +13,8 @@
 // TX Audio LCK: D4 (02)
 
 // Web Server
-const String webServerName = "R.A.D.I.O.";
-ESPWiFi wifi = ESPWiFi("R.A.D.I.O.", "abcd1234");
+const String webServerName = "RADIO";
+ESPWiFi wifi = ESPWiFi("RADIO", "abcd1234");
 
 void setup() {
   initializeData();

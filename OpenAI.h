@@ -56,8 +56,6 @@ void openAI_TTS(String text, String filePath) {
     }
 
     // Stream the response into the file
-    // This handles the binary data appropriately by treating it as a stream of
-    // bytes
     http.writeToStream(&file);
     file.close();
     Serial.println("File written successfully");
@@ -85,7 +83,7 @@ String openAIChat(String text) {
   doc["messages"][0]["role"] = "system";
   doc["messages"][0]["content"] =
       "You are an AI ham radio operator."
-      "Your call sign is WSCE496 or W S C E 4 9 6."
+      "Your call sign is WSCE496"
       "Use the call sign to refer to yourself."
       "End with your call sign and/or other radio appropriate etiquette"
       "Use the NATO phonetic alphabet when reciting letters, and numbers."

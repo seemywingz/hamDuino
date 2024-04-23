@@ -21,7 +21,7 @@
                 "/Users/kjj/Library/Arduino15/packages/esp8266/hardware/esp8266/3.1.2/tools/sdk/lwip2/include",
                 "/Users/kjj/Library/Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266",
                 "/Users/kjj/Library/Arduino15/packages/esp8266/hardware/esp8266/3.1.2/variants/d1_mini",
-                "/Users/kjj/Documents/Arduino/libraries/ESPWiFi",
+                "/Users/kjj/git/ESPWiFi",
                 "/Users/kjj/Library/Arduino15/packages/esp8266/hardware/esp8266/3.1.2/libraries/ESP8266WebServer/src",
                 "/Users/kjj/Library/Arduino15/packages/esp8266/hardware/esp8266/3.1.2/libraries/ESP8266WiFi/src",
                 "/Users/kjj/Library/Arduino15/packages/esp8266/hardware/esp8266/3.1.2/libraries/ESP8266mDNS/src",

@@ -157,3 +157,29 @@ input[type=range]::-webkit-slider-thumb {
 input[type=range]:focus {
     outline: none;
 }
+
+#fileList {
+    list-style-type: none;
+    padding: 0;
+}
+
+#fileList li {
+    background-color: #f4f4f4;
+    margin-top: 5px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#fileList a {
+    color: #007BFF;
+    /* Bootstrap-like link color */
+    text-decoration: none;
+    /* Remove underline */
+}
+
+#fileList a:hover {
+    text-decoration: underline;
+    /* Underline on hover */
+    color: #0056b3;
+    /* Darken color on hover */
+}

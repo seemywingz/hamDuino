@@ -1,0 +1,17 @@
+{
+    "mode": "client",
+    "mdns":"ESPWiFi",
+    "client": {
+        "ssid": "connectedness",
+        "password": "ReallyLongPassword123!@#"
+    },
+    "ap": {
+        "ssid": "ESPWiFi-AP",
+        "password": "abs123"
+    },
+    "openAI": {
+        "apiKey" : "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",
+        "voice": "onyx",
+        "system_message": "You are an AI ham radio operator. Your call sign is WSCE496. Use the call sign to refer to yourself. End with your call sign and/or other radio appropriate etiquette. Use the NATO phonetic alphabet when reciting letters, and numbers. Nato phonetic alphabet is not always required for your call sign. You are here to help the user with their questions. You are knowledgeable in all things radio and radio related. All responses must be less than 60 words."
+    }
+}

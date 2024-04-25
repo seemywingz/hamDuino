@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "/Users/kjj/git/ESPWiFi/src",
                 "/Users/kjj/Documents/Arduino/libraries/**",
-                "/Users/kjj/Library/Arduino15/packages/**"
+                "/Users/kjj/Library/Arduino15/packages/**",
+                "/Users/kjj/Library/Arduino15/packages/esp8266/hardware/esp8266/3.1.2/cores/esp8266"
             ],
             "defines": [],
             "macFrameworkPath": [],
